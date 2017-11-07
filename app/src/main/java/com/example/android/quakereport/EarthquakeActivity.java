@@ -15,22 +15,22 @@
  */
 package com.example.android.quakereport;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
-
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
+    private static final int EARTHQUAKE_LOADER_ID=1;
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private static final String USGS_URL ="https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=50";
-    private NetworkDownloaderClass networkDownloaderClass;
     Earthquake_customAdapter eathadapter=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +38,13 @@ public class EarthquakeActivity extends AppCompatActivity {
         setContentView(R.layout.earthquake_activity);
 
         // Create a fake list of earthquake locations.
-        networkDownloaderClass=new NetworkDownloaderClass();
-        networkDownloaderClass.execute(USGS_URL);
         // Find a reference to the {@link ListView} in the layout
 
         // Create a new {@link ArrayAdapter} of earthquakes
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
+        LoaderManager loaderManager=getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID,null,this);
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -56,27 +56,25 @@ public class EarthquakeActivity extends AppCompatActivity {
             }
         });
     }
-    private void updateUI(ArrayList<Earthquake> earthquakes)
-    {
 
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        return new EarthquakeLoader(this,USGS_URL);
     }
-    private class NetworkDownloaderClass extends AsyncTask<String,Void,ArrayList<Earthquake>>{
 
-        @Override
-        protected ArrayList<Earthquake> doInBackground(String... strings) {
-            if(strings.length<1||strings[0]==null)return null;
-            ArrayList<Earthquake> earth=QueryUtils.extractEarthquakes(strings[0]);
-            return earth;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Earthquake> earthquakes) {
-                if(earthquakes==null)return;
-            ListView earthquakeListView = (ListView) findViewById(R.id.list);
-            if(earthquakes==null)System.out.println("Yes");
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        if(eathadapter!=null)eathadapter.clear();
+        if(earthquakes!=null&&!earthquakes.isEmpty())
+        {
             eathadapter=new Earthquake_customAdapter(EarthquakeActivity.this,earthquakes);
-            if(eathadapter==null)System.out.println("Yes");
+            ListView earthquakeListView = (ListView) findViewById(R.id.list);
             earthquakeListView.setAdapter(eathadapter);
         }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        eathadapter.clear();
     }
 }

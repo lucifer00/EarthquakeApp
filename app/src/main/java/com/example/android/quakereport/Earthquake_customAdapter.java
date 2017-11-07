@@ -13,8 +13,8 @@ import android.widget.TextView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Prashant on 8/26/2017.
@@ -22,7 +22,7 @@ import java.util.Date;
 
 public class Earthquake_customAdapter extends ArrayAdapter<Earthquake> {
     private static final String LOCATION_SEPARATOR="of";
-    public Earthquake_customAdapter( Activity context, ArrayList<Earthquake> earthquakeArrayAdapter) {
+    public Earthquake_customAdapter( Activity context, List<Earthquake> earthquakeArrayAdapter) {
         super(context,0,earthquakeArrayAdapter);
     }
 
